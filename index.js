@@ -24,7 +24,7 @@ const STATIC_PATH =
 
 const app = express();
 
-// Middleware to capture raw body for HMAC verification
+// Middleware to capture raw body for HMAC verification.
 app.use(express.json({
   verify: (req, res, buf) => {
     req.rawBody = buf.toString(); // Capture the raw body as a string
