@@ -63,7 +63,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
   try {
     const payload = req.body;
-    // console.log("webhook request data",req.query.shopid)
+    // console.log("webhook request data",req.query.shopid).
 
     const orderStatusUrl = payload.order_status_url;
 
