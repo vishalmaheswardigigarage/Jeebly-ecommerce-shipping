@@ -337,7 +337,7 @@ app.get("/api/shop/all", async (_req, res) => {
       session: res.locals.shopify.session,
     });
      shopId = shopData.data[0].id
-     console.log("endpoint of shop data",shopData,shopId)
+     console.log("endpoint of shop data",shopData)
     res.status(200).json({ success: true, data:shopData});
    
   } catch (error) {
