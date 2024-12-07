@@ -50,7 +50,7 @@ function verifyShopifyWebhook(req) {
   return generatedHash === hmac;
 }
 
-// Webhook endpoint
+// Webhook endpoint..
 let payload = null;
 
 
@@ -327,7 +327,7 @@ app.post(
 
 );
 
-// hear the code..
+// hear the code...//
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
 
@@ -338,7 +338,7 @@ app.get("/api/shop/all", async (_req, res) => {
     });
      shopId = shopData.data[0].id
      console.log("endpoint of shop data",shopData,shopId)
-    res.status(200).json({ success: true, data:shopData.data});
+    res.status(200).json({ success: true, data:shopData});
    
   } catch (error) {
     console.error('Error fetching shopdata:', error);
