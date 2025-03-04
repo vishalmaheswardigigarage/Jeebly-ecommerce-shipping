@@ -103,7 +103,10 @@ async function processWebhookData(payload,extractedShopId) {
   }
 
   // Extract data from the webhook payload.
-  const description = payload?.line_items?.map(item => `${item?.title || "Default title"} (SKU: ${item?.sku || "N/A"} | Quantity: ${item?.quantity || 0})`).join(' , ');
+  const description = payload?.line_items?.map(item => 
+    `${item?.name || "Default Name"} - ${item?.title || "Default Title"} (SKU: ${item?.sku || "N/A"} | Quantity: ${item?.quantity || 0})`
+).join(' , ');
+
   const weight = Math.round(payload?.line_items?.[0]?.grams || 1000);
   const codAmount = parseFloat(payload?.total_price) || 0;
   const pieces = payload?.line_items?.length || 1;
