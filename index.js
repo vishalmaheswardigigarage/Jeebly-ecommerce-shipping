@@ -191,7 +191,7 @@ async function createShipment({
     cod_amount:  codAmountToUse||"0.00",
     num_pieces: pieces,
     customer_reference_number: orderNumber || "",
-    origin_address_name: defaultAddress.addr_area||"",
+    origin_address_name: defaultAddress.addr_contact_person||"",
     origin_address_mob_no_country_code: "",
     origin_address_mobile_number: defaultAddress.addr_mobile_number||"",
     origin_address_house_no: defaultAddress.addr_house_no||"",
