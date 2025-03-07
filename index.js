@@ -104,8 +104,8 @@ async function processWebhookData(payload,extractedShopId) {
 
   // Extract data from the webhook payload.
   const description = payload?.line_items?.map(item => 
-    `SKU: ${item?.sku || "no sku found"} | SKU Name, Color, Size: ${item?.name || "size and colors not defined"} | Qty: ${item?.quantity || 0} | Weight: ${item?.grams || "N/A"}`
-).join(' , ');
+    `SKU: ${item?.sku || "no sku found"}, SKU Name:${item?.title || "title not defined"}, Color & Size: ${item?.variant_title || "size and colors not defined"}, Qty: ${item?.quantity || 0}, Weight: ${item?.grams || "N/A"}`
+).join(' | ');
 
 // | ${item?.grams || ""}
   const weight = Math.round(payload?.line_items?.[0]?.grams || 1000);
