@@ -16,6 +16,7 @@
     "@shopify/shopify-api": "^11.3.0",
     "@shopify/shopify-app-express": "^5.0.4",
     "@shopify/shopify-app-session-storage-sqlite": "^4.0.4",
+    "@shopify/shopify-app-session-storage-mongodb": "^4.0.10",
     "axios": "^1.7.6",
     "compression": "^1.7.4",
     "cross-env": "^7.0.3",
