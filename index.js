@@ -353,7 +353,7 @@ app.get("/api/shop/all", async (_req, res) => {
 
 app.get("/api/orders/all", async (_req, res) => {
   try {
-    // Fetch all orders from Shopify API
+    // Fetch all orders from Shopify API...
     const orderData = await shopify.api.rest.Order.all({
       session: res.locals.shopify.session,
       status: "any"
