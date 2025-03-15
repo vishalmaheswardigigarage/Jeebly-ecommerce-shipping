@@ -103,28 +103,35 @@ async function processWebhookData(payload,extractedShopId) {
   }
 
   // Extract data from the webhook payload.
-  const description = payload?.line_items?.map(item => {
-    let parts = [];
+  const description = 
+  payload?.line_items?.length > 0
+      ? payload.line_items.map(item => {
+          const details = [];
 
-    if (item?.sku) parts.push(`SKU: ${item.sku}`);
-    else parts.push(`SKU: no sku found`);
+          if (item?.sku && item.sku !== "no sku found") {
+              details.push(`SKU: ${item.sku}`);
+          }
 
-    if (item?.title) parts.push(`SKU Name: ${item.title}`);
-    else parts.push(`SKU Name: title not defined`);
+          if (item?.title && item.title !== "title not defined") {
+              details.push(`SKU Name: ${item.title}`);
+          }
 
-    if (item?.variant_title) parts.push(`Color & Size: ${item.variant_title}`);
-    else parts.push(`Color & Size: size and colors not defined`);
+          if (item?.variant_title && item.variant_title !== "size and colors not defined") {
+              details.push(`Color & Size: ${item.variant_title}`);
+          }
 
-    if (item?.quantity != null) parts.push(`Qty: ${item.quantity}`);
+          if (item?.quantity != null) {
+              details.push(`Qty: ${item.quantity}`);
+          }
 
-    if (item?.grams != null && item.grams > 0) {
-        let weightKg = (item.grams / 1000).toFixed(2); // Convert to KG with 2 decimal places
-        parts.push(`Weight: ${weightKg}kg`);
-    }
+          if (item?.grams != null && item.grams > 0) {
+              let weightKg = (item.grams / 1000).toFixed(2); // Convert grams to KG
+              details.push(`Weight: ${weightKg} kg`);
+          }
 
-    return parts.join(', ');
-}).join(' | ');
-
+          return details.join(', ');
+      }).join(' | ')
+      : "";
 
 // | ${item?.grams || ""}......
   const weight = Math.round(payload?.line_items?.[0]?.grams || 1000);
