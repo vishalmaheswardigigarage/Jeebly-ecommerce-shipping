@@ -309,7 +309,7 @@ function getNextDayDate() {
   return tomorrow.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 }
 
-// Endpoint to get the latest webhook data..
+// Endpoint to get the latest webhook data....
 
 app.get('/api/webhooks/latest', (_req, res) => {
   if (payload) {
