@@ -119,7 +119,7 @@ async function processWebhookData(payload,extractedShopId) {
 
     if (item?.grams != null && item.grams > 0) {
         let weightKg = (item.grams / 1000).toFixed(2); // Convert to KG with 2 decimal places
-        parts.push(`Weight: ${weightKg} kg`);
+        parts.push(`Weight: ${weightKg}kg`);
     }
 
     return parts.join(', ');
