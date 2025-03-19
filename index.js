@@ -125,7 +125,7 @@ async function processWebhookData(payload,extractedShopId) {
           }
 
           if (item?.grams != null && item.grams > 0) {
-              let weightKg = (item.grams / 1000).toFixed(2); // Convert grams to KG
+              let weightKg = (item.grams / 1000).toFixed(1); // Convert grams to KG
               details.push(`Weight: ${weightKg} kg`);
           }
 
