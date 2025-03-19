@@ -136,7 +136,7 @@ async function processWebhookData(payload,extractedShopId) {
 // | ${item?.grams || ""}......
   const weight = Math.round(payload?.line_items?.[0]?.grams || 1000);
   const codAmount = parseFloat(payload?.total_price) || 0;
-  const pieces = payload?.line_items?.length || 1;
+  const pieces = payload?.line_items?.reduce((sum, item) => sum + item.quantity, 0) || 1;
   const timeZone = payload?.line_items?.timezone||"00:00";
   const dropoffName = payload?.shipping_address?.name || "Unknown";
   const dropoffPhone = payload?.shipping_address?.phone || "Unknown";
