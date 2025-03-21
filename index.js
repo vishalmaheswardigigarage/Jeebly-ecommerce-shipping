@@ -133,7 +133,7 @@ async function processWebhookData(payload,extractedShopId) {
       }).join(' | ')
       : "";
 
-// | ${item?.grams || ""}......
+// | ${item?.grams || ""}.........
   const weight = Math.round(payload?.line_items?.[0]?.grams || 1000);
   const codAmount = parseFloat(payload?.total_price) || 0;
   const pieces = payload?.line_items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
