@@ -63,6 +63,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
   try {
     const payload = req.body;
+    const orderId = payload?.id;
     // console.log("webhook request data",req.query.shopid).
 
     const orderStatusUrl = payload.order_status_url;
@@ -70,7 +71,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     // Use a regular expression to extract the shop ID from the URL
     const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
     const extractedShopId = shopIdMatch ? shopIdMatch[1] : null; // Capturing group 1 contains the shop ID
-
+    console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
     console.log("Extracted Shop ID:", extractedShopId);
     console.log("Webhook received:", payload);
 
