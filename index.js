@@ -75,6 +75,16 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     console.log("Extracted Shop ID:", extractedShopId);
     console.log("Webhook received:", payload);
 
+
+    // new code added 07/05/2025
+
+    if (!orderId || !extractedShopId) {
+      throw new Error("Missing order ID or shop ID.");
+    }
+
+    // new code added 07/05/2025
+
+
     // Process webhook data
     await processWebhookData(payload,extractedShopId);
 
