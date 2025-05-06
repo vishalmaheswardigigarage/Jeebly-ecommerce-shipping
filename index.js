@@ -59,11 +59,11 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
-
-  res.status(200).json({ success: true, message: 'Webhook received and process next' });
  
   try {
-    const payload = req.body;
+     const payload = req.body;
+
+    // res.status(200).json({ success: true, message: 'Webhook received' });
     const orderId = payload?.id;
     // console.log("webhook request data",req.query.shopid).
 
@@ -85,9 +85,11 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     // new code added 07/05/2025
 
+
     // Process webhook data
     await processWebhookData(payload,extractedShopId);
 
+    res.status(200).json({ success: true, message: 'Webhook received' });
    
   } catch (error) {
     console.error('Error processing webhook:', error);
