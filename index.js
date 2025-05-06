@@ -60,7 +60,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
-  // res.status(200).json({ success: true, message: 'Webhook received' });
+  res.status(200).json({ success: true, message: 'Webhook received and process next' });
  
   try {
     const payload = req.body;
