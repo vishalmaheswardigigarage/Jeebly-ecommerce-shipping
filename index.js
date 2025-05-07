@@ -59,6 +59,9 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
+
+  // Send Shopify an immediate 200 OK to avoid timeout
+  res.status(200).send('OK');
  
   try {
      const payload = req.body;
