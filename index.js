@@ -54,6 +54,7 @@ function verifyShopifyWebhook(req) {
 let payload = null;
 
 
+
 // Webhook handler
 app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
@@ -96,7 +97,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
    
   } catch (error) {
     console.error('Error processing webhook:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+
   }
 });
 
