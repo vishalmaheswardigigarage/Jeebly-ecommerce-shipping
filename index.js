@@ -52,7 +52,7 @@ function verifyShopifyWebhook(req) {
 // Webhook endpoint..
 let payload = null;
 
-
+const lastSuccessfulShipments = {};
 
 // Webhook handler
 app.post('/api/webhooks/ordercreate', async (req, res) => {
@@ -216,6 +216,21 @@ async function createShipment({
   clientKey,
   timezone
 }) {
+
+
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const now = Date.now();
+
+  // Check if this order was recently processed
+  const lastTime = lastSuccessfulShipments[orderNumber];
+  const oneMinute = 60 * 1000;
+
+  if (lastTime && now - lastTime < oneMinute) {
+    const waitTime = oneMinute - (now - lastTime);
+    console.log(`Order ${orderNumber} was processed recently. Waiting ${waitTime / 1000}s...`);
+    await delay(waitTime);
+  }
+
   // Fetch the stored client key from the API
  
 
