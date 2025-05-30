@@ -1,5 +1,4 @@
 
-
 import crypto from 'crypto';
 import express from "express";
 import serveStatic from "serve-static";
@@ -217,7 +216,11 @@ async function createShipment({
   timezone
 }) {
   // Fetch the stored client key from the API
+ // Helper to wait
+ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
+ // Add a 5-second delay....
+ await delay(5000);
 
   const url = `https://myjeebly.jeebly.com/app/create_shipment_webhook?client_key=${clientKey}`;
   const body = JSON.stringify({
