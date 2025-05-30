@@ -197,6 +197,8 @@ async function processWebhookData(payload,extractedShopId) {
     clientKey,
     timeZone
   });
+
+  const shipmentRetryTracker = {};
   // // Function to call the bookshipment API
 async function createShipment({
   description,
@@ -216,11 +218,25 @@ async function createShipment({
   timezone
 }) {
   // Fetch the stored client key from the API
- // Helper to wait
- const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const shipmentKey = orderNumber;
 
- // Add a 5-second delay....
- await delay(5000);
+  const now = Date.now();
+  const lastAttempt = shipmentRetryTracker[shipmentKey] || 0;
+  const timeSinceLast = now - lastAttempt;
+
+  // Delay logic
+  const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  if (timeSinceLast < 60000) {
+    console.log(`Retry detected. Waiting 1 minute before retrying...`);
+    await delay(60000); // 1 minute
+  } else {
+    console.log(`First or fresh call. Waiting 5 seconds...`);
+    await delay(5000); // 5 seconds
+  }
+
+  // Update last attempt time
+  shipmentRetryTracker[shipmentKey] = Date.now();
 
   const url = `https://myjeebly.jeebly.com/app/create_shipment_webhook?client_key=${clientKey}`;
   const body = JSON.stringify({
