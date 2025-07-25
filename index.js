@@ -86,14 +86,6 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     // new code added 07/05/2025
 
-    const customerId = payload.customer?.id;
-
-    const customer = await shopify.api.rest.Customer.find({
-      session,
-      id: customerId,
-    });
-
-    console.log(`customer id ${customer}`);
     // Process webhook data
     await processWebhookData(payload,extractedShopId);
 
