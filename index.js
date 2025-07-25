@@ -432,13 +432,13 @@ app.get("/api/orders/all", async (_req, res) => {
     });
 
     // Filter orders where cancel_reason is null
-    // const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
+    const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
      // Filter orders:
-     const filteredOrders = orderData.data.filter(order => {
-      const isCancelled = order.cancel_reason !== null;
-      const isWebhookCreated = order.tags?.includes('created_by_webhook') || webhookOrderIds.has(order.id);
-      return !isCancelled && !isWebhookCreated;
-    });
+    //  const filteredOrders = orderData.data.filter(order => {
+    //   const isCancelled = order.cancel_reason !== null;
+    //   const isWebhookCreated = order.tags?.includes('created_by_webhook') || webhookOrderIds.has(order.id);
+    //   return !isCancelled && !isWebhookCreated;
+    // });
 
     // Send the filtered orders as the response
     res.status(200).json({ success: true, data: filteredOrders });
