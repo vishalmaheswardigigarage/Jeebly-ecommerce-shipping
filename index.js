@@ -106,22 +106,15 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
   try {
     const payload = req.body;
-    const orderId = payload?.id;
-    const orderStatusUrl = payload.order_status_url;
+    const orderId = payload.id;
+    const shopDomain = req.headers['x-shopify-hmac-sha256'];
 
-    const shopIdMatch = orderStatusUrl?.match(/\/(\d+)\/orders/);
-    const extractedShopId = shopIdMatch ? shopIdMatch[1] : null;
+    if (!orderId || !shopDomain) throw new Error("Missing order ID or shop domain.");
 
-    const shopDomain = req.headers['x-shopify-shop-domain']; // <-- FIX
-
-    console.log(`Webhook received for order ID: ${orderId}, Shop: ${shopDomain}`);
-
-    if (!shopDomain || !orderId) throw new Error("Missing shop domain or order ID.");
-
-    const session = await shopify.api.sessionStorage.loadByShop(shopDomain); // <-- USE THIS
-
+    const session = await shopify.sessionStorage.loadByShop(shopDomain);
     if (!session) throw new Error(`No session found for shop: ${shopDomain}`);
 
+    // Fetch the order to get current tags
     const order = await shopify.api.rest.Order.find({
       session,
       id: orderId,
@@ -133,16 +126,13 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
       : `${existingTags}, created_by_webhook`;
 
     order.tags = updatedTags.trim();
-    await order.save();
+    await order.save(); // Save the tag
 
-    console.log(`Order ${orderId} tagged successfully.`);
-
-    await processWebhookData(payload, extractedShopId);
+    console.log(`✅ Tag added to order ${orderId}`);
 
     res.status(200).json({ success: true, message: 'Webhook processed and tag added' });
-
   } catch (error) {
-    console.error('Error processing webhook:', error);
+    console.error('❌ Error processing webhook:', error);
     res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
   }
 });
