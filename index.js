@@ -59,7 +59,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
-
+  const domain = req.get('X-Shopify-Shop-Domain');
  
   try {
      const payload = req.body;
@@ -78,14 +78,17 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     console.log("Webhook received:", payload);
 
 
-    const order = await shopify.api.rest.Order({ session: res.locals.shopify.session,});
+    console.log("Webhook payload:", payload);
+
+    // Load offline session using the shop domain
+    const session = await shopify.api.sessionStorage.loadOfflineSession(domain);
+
+    // Add tag to the order
+    const order = new shopify.api.rest.Order({ session });
     order.id = orderId;
-    order.tags = "webhook order"; 
-    
-    await order.save({
-      update: true,
-    });
-    
+    order.tags = "webhook order";
+
+    await order.save({ update: true });
 
     // new code added 07/05/2025
 
