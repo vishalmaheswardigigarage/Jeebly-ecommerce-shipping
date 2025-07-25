@@ -55,86 +55,55 @@ let payload = null;
 const lastSuccessfulShipments = {};
 
 // Webhook handler
-// app.post('/api/webhooks/ordercreate', async (req, res) => {
-//   if (!verifyShopifyWebhook(req)) {
-//     return res.status(401).json({ success: false, message: 'Unauthorized' });
-//   }
-
- 
-//   try {
-//      const payload = req.body;
-
-//     // res.status(200).json({ success: true, message: 'Webhook received' });
-//     const orderId = payload?.id;
-//     // console.log("webhook request data",req.query.shopid).
-
-//     const orderStatusUrl = payload.order_status_url;
-
-//     // Use a regular expression to extract the shop ID from the URL
-//     const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
-//     const extractedShopId = shopIdMatch ? shopIdMatch[1] : null; // Capturing group 1 contains the shop ID
-//     console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
-//     console.log("Extracted Shop ID:", extractedShopId);
-//     console.log("Webhook received:", payload);
-
-
-//     // new code added 07/05/2025
-
-//     // if (!orderId || !extractedShopId) {
-//     //   throw new Error("Missing order ID or shop ID.");
-//     // }
-
-//     // new code added 07/05/2025
-
-
-//     // Process webhook data
-//     await processWebhookData(payload,extractedShopId);
-
-//     res.status(200).json({ success: true, message: 'Webhook received' });
-   
-//   } catch (error) {
-//     console.error('Error processing webhook:', error);
-
-//   }
-// });
-
-
 app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
+ 
   try {
-    const payload = req.body;
-    const orderId = payload.id;
-    const shopDomain = req.headers['x-shopify-shop-domain'];
+     const payload = req.body;
 
-    if (!orderId || !shopDomain) throw new Error("Missing order ID or shop domain.");
+    // res.status(200).json({ success: true, message: 'Webhook received' });
+    const orderId = payload?.id;
+    // console.log("webhook request data",req.query.shopid).
 
-    const session = await shopify.api.sessionStorage.loadByShop(shopDomain);
-    if (!session) throw new Error(`No session found for shop: ${shopDomain}`);
+    const orderStatusUrl = payload.order_status_url;
 
-    // Fetch order to get tags
-    const order = await shopify.api.rest.Order.find({ session, id: orderId });
+    // Use a regular expression to extract the shop ID from the URL
+    const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
+    const extractedShopId = shopIdMatch ? shopIdMatch[1] : null; // Capturing group 1 contains the shop ID
+    console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
+    console.log("Extracted Shop ID:", extractedShopId);
+    console.log("Webhook received:", payload);
 
-    const existingTags = order.tags || '';
-    const updatedTags = existingTags.includes('created_by_webhook')
-      ? existingTags
-      : `${existingTags}, created_by_webhook`;
 
-    order.tags = updatedTags.trim();
-    await order.save();
+    // new code added 07/05/2025
 
-    console.log(`✅ Tag added to order ${orderId}`);
+    // if (!orderId || !extractedShopId) {
+    //   throw new Error("Missing order ID or shop ID.");
+    // }
 
-    res.status(200).json({ success: true, message: 'Webhook processed and tag added' });
+    // new code added 07/05/2025
+
+    const customerId = payload.customer?.id;
+
+    const customer = await shopify.api.rest.Customer.find({
+      session,
+      id: customerId,
+    });
+
+    console.log(`customer id ${customer}`);
+    // Process webhook data
+    await processWebhookData(payload,extractedShopId);
+
+    res.status(200).json({ success: true, message: 'Webhook received' });
+   
   } catch (error) {
-    console.error('❌ Error processing webhook:', error);
-    res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+    console.error('Error processing webhook:', error);
+
   }
 });
-
-
 
 
 
