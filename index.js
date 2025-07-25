@@ -86,6 +86,24 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     // new code added 07/05/2025
 
+    // Fetch the order to get current tags
+    const order = await shopify.api.rest.Order.find({
+      session: res.locals.shopify.session,
+      id: orderId,
+    });
+
+      // Append new tag
+      const existingTags = order.tags || '';
+      const updatedTags = existingTags.includes('created_by_webhook')
+        ? existingTags
+        : `${existingTags}, created_by_webhook`;
+  
+      // Update order with new tag
+      order.tags = updatedTags.trim();
+      await order.save();
+  
+      console.log(`Order ${orderId} tagged successfully.`);
+
 
     // Process webhook data
     await processWebhookData(payload,extractedShopId);
@@ -423,28 +441,56 @@ app.get("/api/shop/all", async (_req, res) => {
 });
 
 
+// app.get("/api/orders/all", async (_req, res) => {
+//   try {
+//     // Fetch all orders from Shopify API...
+//     const orderData = await shopify.api.rest.Order.all({
+//       session: res.locals.shopify.session,
+//       status: "any"
+//     });
+
+//     // Filter orders where cancel_reason is null
+//     // const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
+//      // Filter orders:
+//      const filteredOrders = orderData.data.filter(order => {
+//       const isCancelled = order.cancel_reason !== null;
+//       const isWebhookCreated = order.tags?.includes('created_by_webhook') || webhookOrderIds.has(order.id);
+//       return !isCancelled && !isWebhookCreated;
+//     });
+
+//     // Send the filtered orders as the response
+//     res.status(200).json({ success: true, data: filteredOrders });
+//     console.log("Filtered order data retrieved successfully");
+//   } catch (error) {
+//     console.error('Error fetching orders:', error);
+//     res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+//   }
+// });
+
+
 app.get("/api/orders/all", async (_req, res) => {
   try {
-    // Fetch all orders from Shopify API...
     const orderData = await shopify.api.rest.Order.all({
       session: res.locals.shopify.session,
       status: "any"
     });
 
-    // Filter orders where cancel_reason is null
-    const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
-     // Filter orders:
-    //  const filteredOrders = orderData.data.filter(order => {
-    //   const isCancelled = order.cancel_reason !== null;
-    //   const isWebhookCreated = order.tags?.includes('created_by_webhook') || webhookOrderIds.has(order.id);
-    //   return !isCancelled && !isWebhookCreated;
-    // });
+    const webhookOrderIds = new Set(); // Define properly if used
 
-    // Send the filtered orders as the response
+    const filteredOrders = orderData.data.filter(order => {
+      const isCancelled = order.cancel_reason !== null;
+      const isWebhookCreated =
+        order.tags?.includes('created_by_webhook') ||
+        webhookOrderIds.has(order.id);
+
+      return !isCancelled && !isWebhookCreated;
+    });
+
     res.status(200).json({ success: true, data: filteredOrders });
-    console.log("Filtered order data retrieved successfully");
+    console.log(`Returning ${filteredOrders.length} filtered orders`);
   } catch (error) {
     console.error('Error fetching orders:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
   }
 });
