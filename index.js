@@ -69,6 +69,8 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     // console.log("webhook request data",req.query.shopid).
 
     const orderStatusUrl = payload.order_status_url;
+    const domain = req.get('X-Shopify-Shop-Domain');
+
 
     // Use a regular expression to extract the shop ID from the URL
     const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
