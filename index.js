@@ -107,18 +107,15 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   try {
     const payload = req.body;
     const orderId = payload.id;
-    const shopDomain = req.headers['x-shopify-hmac-sha256'];
+    const shopDomain = req.headers['x-shopify-shop-domain'];
 
     if (!orderId || !shopDomain) throw new Error("Missing order ID or shop domain.");
 
-    const session = res.locals.shopify.session;
+    const session = await shopify.api.sessionStorage.loadByShop(shopDomain);
     if (!session) throw new Error(`No session found for shop: ${shopDomain}`);
 
-    // Fetch the order to get current tags
-    const order = await shopify.api.rest.Order.find({
-      session,
-      id: orderId,
-    });
+    // Fetch order to get tags
+    const order = await shopify.api.rest.Order.find({ session, id: orderId });
 
     const existingTags = order.tags || '';
     const updatedTags = existingTags.includes('created_by_webhook')
@@ -126,7 +123,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
       : `${existingTags}, created_by_webhook`;
 
     order.tags = updatedTags.trim();
-    await order.save(); // Save the tag
+    await order.save();
 
     console.log(`✅ Tag added to order ${orderId}`);
 
@@ -136,6 +133,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
   }
 });
+
 
 
 
