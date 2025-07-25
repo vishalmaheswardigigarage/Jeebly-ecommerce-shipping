@@ -111,7 +111,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     if (!orderId || !shopDomain) throw new Error("Missing order ID or shop domain.");
 
-    const session = await shopify.sessionStorage.loadByShop(shopDomain);
+    const session = res.locals.shopify.session;
     if (!session) throw new Error(`No session found for shop: ${shopDomain}`);
 
     // Fetch the order to get current tags
