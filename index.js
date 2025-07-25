@@ -100,18 +100,18 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
 
 
-if (!session) {
-  console.error('No session found for shop:', shop);
-  return;
-}
+// if (!session) {
+//   console.error('No session found for shop:', shop);
+//   return;
+// }
 
-const order = new shopify.api.rest.Order({ session });
-order.id = payload.id;
-order.tags = (payload.tags || '') + ',created_by_webhook';
+// const order = new shopify.api.rest.Order({ session });
+// order.id = payload.id;
+// order.tags = (payload.tags || '') + ',created_by_webhook';
 
-await order.save({
-  update: true
-});
+// await order.save({
+//   update: true
+// });
 
 
 
