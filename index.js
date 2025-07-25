@@ -78,13 +78,14 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     console.log("Webhook received:", payload);
 
   
-    const order = new shopify.api.rest.Order({ session });
+    const order = new shopify.api.rest.Order({ session: res.locals.shopify.session });
     order.id = orderId;
-    order.tags = "webhook order"; // Replace or append as needed
-
+    order.tags = "webhook order"; // This will **overwrite** existing tags
+    
     await order.save({
       update: true,
     });
+    
 
     // new code added 07/05/2025
 
