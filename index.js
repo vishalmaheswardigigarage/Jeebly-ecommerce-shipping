@@ -69,7 +69,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     // console.log("webhook request data",req.query.shopid).
 
     const orderStatusUrl = payload.order_status_url;
-    const domain = req.get('X-Shopify-Shop-Domain');
+  
 
 
     // Use a regular expression to extract the shop ID from the URL
@@ -82,15 +82,8 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     console.log("Webhook payload:", payload);
 
-    // Load offline session using the shop domain
-    const session = await shopify.api.sessionStorage.loadOfflineSession(domain);
 
-    // Add tag to the order
-    const order = new shopify.api.rest.Order({ session });
-    order.id = orderId;
-    order.tags = "webhook order";
-
-    await order.save({ update: true });
+   
 
     // new code added 07/05/2025
 
