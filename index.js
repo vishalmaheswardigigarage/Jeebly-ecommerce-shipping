@@ -59,7 +59,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
-  const domain = req.get('X-Shopify-Shop-Domain');
+  
  
   try {
      const payload = req.body;
