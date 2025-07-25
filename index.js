@@ -77,6 +77,14 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     console.log("Extracted Shop ID:", extractedShopId);
     console.log("Webhook received:", payload);
 
+  
+    const order = new shopify.api.rest.Order({ session });
+    order.id = orderId;
+    order.tags = "webhook order"; // Replace or append as needed
+
+    await order.save({
+      update: true,
+    });
 
     // new code added 07/05/2025
 
