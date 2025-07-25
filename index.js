@@ -55,66 +55,98 @@ let payload = null;
 const lastSuccessfulShipments = {};
 
 // Webhook handler
+// app.post('/api/webhooks/ordercreate', async (req, res) => {
+//   if (!verifyShopifyWebhook(req)) {
+//     return res.status(401).json({ success: false, message: 'Unauthorized' });
+//   }
+
+ 
+//   try {
+//      const payload = req.body;
+
+//     // res.status(200).json({ success: true, message: 'Webhook received' });
+//     const orderId = payload?.id;
+//     // console.log("webhook request data",req.query.shopid).
+
+//     const orderStatusUrl = payload.order_status_url;
+
+//     // Use a regular expression to extract the shop ID from the URL
+//     const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
+//     const extractedShopId = shopIdMatch ? shopIdMatch[1] : null; // Capturing group 1 contains the shop ID
+//     console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
+//     console.log("Extracted Shop ID:", extractedShopId);
+//     console.log("Webhook received:", payload);
+
+
+//     // new code added 07/05/2025
+
+//     // if (!orderId || !extractedShopId) {
+//     //   throw new Error("Missing order ID or shop ID.");
+//     // }
+
+//     // new code added 07/05/2025
+
+
+//     // Process webhook data
+//     await processWebhookData(payload,extractedShopId);
+
+//     res.status(200).json({ success: true, message: 'Webhook received' });
+   
+//   } catch (error) {
+//     console.error('Error processing webhook:', error);
+
+//   }
+// });
+
+
 app.post('/api/webhooks/ordercreate', async (req, res) => {
   if (!verifyShopifyWebhook(req)) {
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
- 
   try {
-     const payload = req.body;
-
-    // res.status(200).json({ success: true, message: 'Webhook received' });
+    const payload = req.body;
     const orderId = payload?.id;
-    // console.log("webhook request data",req.query.shopid).
-
     const orderStatusUrl = payload.order_status_url;
 
-    // Use a regular expression to extract the shop ID from the URL
-    const shopIdMatch = orderStatusUrl.match(/\/(\d+)\/orders/);
-    const extractedShopId = shopIdMatch ? shopIdMatch[1] : null; // Capturing group 1 contains the shop ID
-    console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
-    console.log("Extracted Shop ID:", extractedShopId);
-    console.log("Webhook received:", payload);
+    const shopIdMatch = orderStatusUrl?.match(/\/(\d+)\/orders/);
+    const extractedShopId = shopIdMatch ? shopIdMatch[1] : null;
 
+    const shopDomain = req.headers['x-shopify-shop-domain']; // <-- FIX
 
-    // new code added 07/05/2025
+    console.log(`Webhook received for order ID: ${orderId}, Shop: ${shopDomain}`);
 
-    // if (!orderId || !extractedShopId) {
-    //   throw new Error("Missing order ID or shop ID.");
-    // }
+    if (!shopDomain || !orderId) throw new Error("Missing shop domain or order ID.");
 
-    // new code added 07/05/2025
+    const session = await shopify.api.sessionStorage.loadByShop(shopDomain); // <-- USE THIS
 
-    // Fetch the order to get current tags
+    if (!session) throw new Error(`No session found for shop: ${shopDomain}`);
+
     const order = await shopify.api.rest.Order.find({
-      session: res.locals.shopify.session,
+      session,
       id: orderId,
     });
 
-      // Append new tag
-      const existingTags = order.tags || '';
-      const updatedTags = existingTags.includes('created_by_webhook')
-        ? existingTags
-        : `${existingTags}, created_by_webhook`;
-  
-      // Update order with new tag
-      order.tags = updatedTags.trim();
-      await order.save();
-  
-      console.log(`Order ${orderId} tagged successfully.`);
+    const existingTags = order.tags || '';
+    const updatedTags = existingTags.includes('created_by_webhook')
+      ? existingTags
+      : `${existingTags}, created_by_webhook`;
 
+    order.tags = updatedTags.trim();
+    await order.save();
 
-    // Process webhook data
-    await processWebhookData(payload,extractedShopId);
+    console.log(`Order ${orderId} tagged successfully.`);
 
-    res.status(200).json({ success: true, message: 'Webhook received' });
-   
+    await processWebhookData(payload, extractedShopId);
+
+    res.status(200).json({ success: true, message: 'Webhook processed and tag added' });
+
   } catch (error) {
     console.error('Error processing webhook:', error);
-
+    res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
   }
 });
+
 
 
 
@@ -468,32 +500,6 @@ app.get("/api/shop/all", async (_req, res) => {
 // });
 
 
-app.get("/api/orders/all", async (_req, res) => {
-  try {
-    const orderData = await shopify.api.rest.Order.all({
-      session: res.locals.shopify.session,
-      status: "any"
-    });
-
-    const webhookOrderIds = new Set(); // Define properly if used
-
-    const filteredOrders = orderData.data.filter(order => {
-      const isCancelled = order.cancel_reason !== null;
-      const isWebhookCreated =
-        order.tags?.includes('created_by_webhook') ||
-        webhookOrderIds.has(order.id);
-
-      return !isCancelled && !isWebhookCreated;
-    });
-
-    res.status(200).json({ success: true, data: filteredOrders });
-    console.log(`Returning ${filteredOrders.length} filtered orders`);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    console.error('Stack trace:', error.stack);
-    res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
-  }
-});
 
 
 
