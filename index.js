@@ -98,7 +98,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
   }
 });
 
-const adminRest = new shopify.api.rest.Order({ session: res.locals.shopify.session });
+const adminRest = shopify.api.rest.Order({ session: res.locals.shopify.session });
 await adminRest.update({
   id: payload.id,
   tags: (payload.tags || '') + ',created_by_webhook'
