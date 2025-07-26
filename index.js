@@ -429,31 +429,25 @@ app.get("/api/shop/all", async (_req, res) => {
 });
 
 
-// app.get("/api/orders/all", async (_req, res) => {
-//   try {
-//     // Fetch all orders from Shopify API...
-//     const orderData = await shopify.api.rest.Order.all({
-//       session: res.locals.shopify.session,
-//       status: "any"
-//     });
+app.get("/api/orders/all", async (_req, res) => {
+  try {
+    // Fetch all orders from Shopify API...
+    const orderData = await shopify.api.rest.Order.all({
+      session: res.locals.shopify.session,
+      status: "any"
+    });
 
-//     // Filter orders where cancel_reason is null
-//     // const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
-//      // Filter orders:
-//      const filteredOrders = orderData.data.filter(order => {
-//       const isCancelled = order.cancel_reason !== null;
-//       const isWebhookCreated = order.tags?.includes('created_by_webhook') || webhookOrderIds.has(order.id);
-//       return !isCancelled && !isWebhookCreated;
-//     });
-
-//     // Send the filtered orders as the response
-//     res.status(200).json({ success: true, data: filteredOrders });
-//     console.log("Filtered order data retrieved successfully");
-//   } catch (error) {
-//     console.error('Error fetching orders:', error);
-//     res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
-//   }
-// });
+    // Filter orders where cancel_reason is null
+    const filteredOrders = orderData.data.filter(order => order.cancel_reason === null);
+   
+    // Send the filtered orders as the response
+    res.status(200).json({ success: true, data: filteredOrders });
+    console.log("Filtered order data retrieved successfully");
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
+  }
+});
 
 
 
