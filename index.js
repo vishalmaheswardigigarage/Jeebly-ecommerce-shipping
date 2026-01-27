@@ -232,8 +232,7 @@ async function processWebhookData(payload, extractedShopId, session) {
         getConfigure,
         clientKey,
         timeZone,
-        session,
-        Ship_type 
+        session
     });
 
     // // Function to call the bookshipment API
@@ -253,8 +252,7 @@ async function processWebhookData(payload, extractedShopId, session) {
         getConfigure,
         clientKey,
         timezone,
-        session,
-        Ship_type 
+        session
     }) {
 
 
