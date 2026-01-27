@@ -64,6 +64,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     try {
         const payload = req.body;
+        const shippingTitle = payload?.shipping_lines?.[0]?.title;
 
         // Load offline session for tracking updates
         let session = undefined;
@@ -192,6 +193,7 @@ async function processWebhookData(payload, extractedShopId, session) {
     const pickupDate = getNextDayDate();
     const clientKey = extractedShopId;
     const OrderId = payload.id;
+    const Ship_type = shippingTitle;
 
     console.log("Extracted Data for Shipment:", {
         description,
@@ -209,7 +211,8 @@ async function processWebhookData(payload, extractedShopId, session) {
         getConfigure,
         clientKey,
         timeZone,
-        OrderId
+        OrderId,
+        Ship_type 
     });
 
     // Call the createShipment function with the extracted data
@@ -229,7 +232,8 @@ async function processWebhookData(payload, extractedShopId, session) {
         getConfigure,
         clientKey,
         timeZone,
-        session
+        session,
+        Ship_type 
     });
 
     // // Function to call the bookshipment API
@@ -249,7 +253,8 @@ async function processWebhookData(payload, extractedShopId, session) {
         getConfigure,
         clientKey,
         timezone,
-        session
+        session,
+        Ship_type 
     }) {
 
 
@@ -300,7 +305,8 @@ async function processWebhookData(payload, extractedShopId, session) {
             destination_address_city: selectedCity || "",
             destination_address_type: "Normal",
             pickup_date: pickupDate || "2024-09-12",
-            time_zone: timezone || "00:00"
+            time_zone: timezone || "00:00",
+            Ship_type: Ship_type 
         });
 
         console.log("Creating shipment with the following payload:");
