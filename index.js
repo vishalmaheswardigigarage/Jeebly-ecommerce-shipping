@@ -106,7 +106,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
         // Process webhook data
         // OPTIMIZATION: Pass session to allow tracking updates
-        await processWebhookData(payload, extractedShopId, session);
+        await processWebhookData(payload, extractedShopId, session,shippingTitle);
 
         res.status(200).json({ success: true, message: 'Webhook received' });
 
@@ -232,7 +232,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         getConfigure,
         clientKey,
         timeZone,
-        session
+        session,
+        Ship_type
     });
 
     // // Function to call the bookshipment API
@@ -252,7 +253,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         getConfigure,
         clientKey,
         timezone,
-        session
+        session,
+        Ship_type
     }) {
 
 
