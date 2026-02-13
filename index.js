@@ -368,6 +368,12 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
 async function fetchDefaultAddress(extractedShopId) {
 
     const clientKey = extractedShopId;
+
+    if (!clientKey) {
+        console.error("fetchDefaultAddress: Missing clientKey (extractedShopId). Aborting fetch.");
+        return null;
+    }
+
     // Fetch the stored client key from the APi
 
     const url = `https://myjeebly.jeebly.com/app/get_address?client_key=${clientKey}`;
