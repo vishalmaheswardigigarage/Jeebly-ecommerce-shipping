@@ -194,6 +194,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     const clientKey = extractedShopId;
     const OrderId = payload.id;
     const Ship_type = shippingTitle;
+    const country = payload.country;
 
     console.log("Extracted Data for Shipment:", {
         description,
@@ -212,6 +213,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         OrderId,
+        country,
         Ship_type 
     });
 
@@ -233,6 +235,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         session,
+        country,
         Ship_type
     });
 
@@ -254,6 +257,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timezone,
         session,
+        country,
         Ship_type
     }) {
 
@@ -295,9 +299,11 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
             origin_address_landmark: defaultAddress.addr_landmark,
             origin_address_city: defaultAddress.addr_city || "",
             origin_address_type: "Normal",
+            origin_address_country:addr_country || "",
             destination_address_name: dropoffName || "",
             destination_address_mob_no_country_code: "",
             destination_address_mobile_number: dropoffPhone || "",
+            destination_address_country:country||"",
             destination_address_house_no: "",
             destination_address_building_name: "",
             destination_address_area: selectedArea || "",
