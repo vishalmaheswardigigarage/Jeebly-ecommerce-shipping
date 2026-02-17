@@ -194,7 +194,6 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     const clientKey = extractedShopId;
     const OrderId = payload.id;
     const Ship_type = shippingTitle;
-    const country = payload?.shipping_address?.country||"";
 
     console.log("Extracted Data for Shipment:", {
         description,
@@ -213,7 +212,6 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         OrderId,
-        country,
         Ship_type 
     });
 
@@ -235,8 +233,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         session,
-        Ship_type,
-        country
+        Ship_type
     });
 
     // // Function to call the bookshipment API
@@ -257,8 +254,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timezone,
         session,
-        Ship_type,
-        country
+        Ship_type
     }) {
 
 
@@ -302,7 +298,6 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
             destination_address_name: dropoffName || "",
             destination_address_mob_no_country_code: "",
             destination_address_mobile_number: dropoffPhone || "",
-            destination_address_country:country||"",
             destination_address_house_no: "",
             destination_address_building_name: "",
             destination_address_area: selectedArea || "",
