@@ -194,7 +194,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     const clientKey = extractedShopId;
     const OrderId = payload.id;
     const Ship_type = shippingTitle;
-    const country = payload.country;
+    const country = payload?.shipping_address.country;
 
     console.log("Extracted Data for Shipment:", {
         description,
@@ -235,8 +235,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         session,
-        country,
-        Ship_type
+        Ship_type,
+        country
     });
 
     // // Function to call the bookshipment API
@@ -257,8 +257,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timezone,
         session,
-        country,
-        Ship_type
+        Ship_type,
+        country
     }) {
 
 
