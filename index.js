@@ -193,6 +193,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     const pickupDate = getNextDayDate();
     const clientKey = extractedShopId;
     const OrderId = payload.id;
+    const country = payload?.shipping_address.country;
     const Ship_type = shippingTitle;
 
     console.log("Extracted Data for Shipment:", {
@@ -212,7 +213,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         OrderId,
-        Ship_type 
+        Ship_type,
+        country
     });
 
     // Call the createShipment function with the extracted data
@@ -233,7 +235,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timeZone,
         session,
-        Ship_type
+        Ship_type,
+        country
     });
 
     // // Function to call the bookshipment API
@@ -254,7 +257,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
         clientKey,
         timezone,
         session,
-        Ship_type
+        Ship_type,
+        country
     }) {
 
 
@@ -306,7 +310,8 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
             destination_address_type: "Normal",
             pickup_date: pickupDate || "2024-09-12",
             time_zone: timezone || "00:00",
-            Ship_type: Ship_type 
+            Ship_type: Ship_type,
+            destination_address_country : country
         });
 
         console.log("Creating shipment with the following payload:");
@@ -398,7 +403,9 @@ async function fetchDefaultAddress(extractedShopId) {
     } catch (error) {
         console.error("Error fetching default address:", error);
     }
-    return null; // Return null if no default address is found or if an error occurs
+    return null; 
+    
+    // Return null if no default address is found or if an error occurs
 }
 // // Fetch configuration data from the get_configuration API
 async function fetchConfigureData(extractedShopId) {
