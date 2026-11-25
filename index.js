@@ -21,6 +21,32 @@ const STATIC_PATH = `${process.cwd()}/dist/`;
 const JEEBLY_BASE = 'https://myjeebly.jeebly.com/app';
 const JEEBLY_TIMEOUT_MS = 8000;
 
+// ---------------------------------------------------------------------------
+// Detailed logging
+// Detailed logs (webhook payload, Jeebly request/response bodies) are ON by default.
+// To turn them off, set the env variable VERBOSE_LOGS=false in Vercel.
+// The access token is ALWAYS redacted in logs.
+// ---------------------------------------------------------------------------
+const VERBOSE_LOGS = process.env.VERBOSE_LOGS !== 'false';
+
+function vlog(label, data) {
+    if (!VERBOSE_LOGS) return;
+    if (data === undefined) {
+        console.log(label);
+        return;
+    }
+    console.log(label, typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+}
+
+function redactSession(session) {
+    if (!session) return session;
+    return {
+        ...session,
+        accessToken: session.accessToken ? '[REDACTED]' : undefined,
+        refreshToken: session.refreshToken ? '[REDACTED]' : undefined,
+    };
+}
+
 const app = express();
 
 // Middleware to capture raw body for HMAC verification
@@ -66,6 +92,9 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
     const orderPayload = req.body;
     const orderId = orderPayload?.id;
 
+    console.log(`Webhook received for order ID: ${orderId}, Timestamp: ${new Date().toISOString()}`);
+    vlog('Webhook payload:', orderPayload);
+
     try {
         const result = await processOrder(orderPayload, shop);
         const line = `Order ${orderId} (${shop}): ${result.status} - ${result.reason}`;
@@ -105,11 +134,13 @@ async function processOrder(orderPayload, shop) {
     // 3. Jeebly client key (shop id) and the offline session
     const clientKey = orderPayload.order_status_url?.match(/\/(\d+)\/orders/)?.[1];
     if (!clientKey) return skip('could not read shop id from order_status_url');
+    console.log('Extracted Shop ID:', clientKey);
     if (!shop) return skip('no shop domain header');
 
     const session = await shopify.config.sessionStorage.loadSession(
         shopify.api.session.getOfflineId(shop)
     );
+    vlog('session for Tracking:', redactSession(session));
     if (!session) return skip('no offline session (app uninstalled?)');
 
     // 4. Both supporting Jeebly APIs must succeed before creating a shipment
@@ -126,14 +157,38 @@ async function processOrder(orderPayload, shop) {
     const pieces = orderPayload.line_items.reduce((sum, item) => sum + (item.quantity || 0), 0);
     const dropoffPhone =
         ship.phone || orderPayload.billing_address?.phone || orderPayload.customer?.phone || 'Unknown';
+    const description = buildDescription(orderPayload);
+    const weight = Math.round(orderPayload.line_items?.[0]?.grams || 1000);
+    const pickupDate = getNextDayDate();
+    const shipType = orderPayload.shipping_lines?.[0]?.title;
+
+    vlog('Extracted Data for Shipment:', {
+        description,
+        weight,
+        codAmountToUse: codAmount,
+        pieces,
+        dropoffName: ship.name || 'Unknown',
+        dropoffPhone,
+        selectedArea,
+        selectedCity,
+        paymentType,
+        pickupDate,
+        defaultAddress,
+        orderNumber: orderPayload.order_number,
+        getConfigure,
+        clientKey,
+        OrderId: orderId,
+        Ship_type: shipType,
+        country,
+    });
 
     const body = {
         client_key: clientKey,
         delivery_type: getConfigure.service_type || 'Next Day',
         load_type: getConfigure.courier_type || 'Non-document',
         consignment_type: 'FORWARD',
-        description: buildDescription(orderPayload),
-        weight: Math.round(orderPayload.line_items?.[0]?.grams || 1000),
+        description,
+        weight,
         payment_type: paymentType,
         cod_amount: codAmount || '0.00',
         num_pieces: pieces,
@@ -156,13 +211,15 @@ async function processOrder(orderPayload, shop) {
         destination_address_landmark: '',
         destination_address_city: selectedCity,
         destination_address_type: 'Normal',
-        pickup_date: getNextDayDate(),
+        pickup_date: pickupDate,
         time_zone: '00:00',
-        Ship_type: orderPayload.shipping_lines?.[0]?.title,
+        Ship_type: shipType,
         destination_address_country: country,
     };
 
     // 6. Create the shipment
+    vlog('Creating shipment with the following payload:', body);
+
     const response = await fetch(
         `${JEEBLY_BASE}/create_shipment_webhook?client_key=${clientKey}`,
         {
@@ -175,6 +232,9 @@ async function processOrder(orderPayload, shop) {
     const data = await response.json().catch(() => ({}));
     const message = String(data?.message || '');
 
+    vlog(`Shipment API Response Status: ${response.status}`);
+    vlog('Shipment API Response Body:', data);
+
     if (/webhook off/i.test(message)) {
         return skip('Jeebly webhook is OFF for this client');
     }
@@ -186,7 +246,10 @@ async function processOrder(orderPayload, shop) {
     if (!awb) return failed('Jeebly response has no AWB number');
 
     // 7. Only now update Shopify tracking
+    vlog('Calling Shopify tracking update with:', { orderId, trackingNumber: awb });
     const tracking = await updateOrderTracking(session, orderId, awb);
+    vlog('Tracking update result:', tracking);
+
     if (!tracking.success) {
         return failed(`shipment ${awb} created but tracking update failed: ${tracking.error}`);
     }
@@ -212,19 +275,31 @@ function buildDescription(orderPayload) {
 // ---------------------------------------------------------------------------
 // Jeebly helper APIs
 // ---------------------------------------------------------------------------
-async function jeeblyGet(path, clientKey) {
-    const response = await fetch(`${JEEBLY_BASE}/${path}?client_key=${clientKey}`, {
+async function jeeblyGet(path, clientKey, label) {
+    const url = `${JEEBLY_BASE}/${path}?client_key=${clientKey}`;
+    vlog(`Fetching ${label} from:`, url);
+
+    const response = await fetch(url, {
         signal: AbortSignal.timeout(JEEBLY_TIMEOUT_MS),
     });
+    vlog(`${label} API Response Status: ${response.status}`);
     if (!response.ok) throw new Error(`${path} returned ${response.status}`);
-    return response.json();
+
+    const data = await response.json();
+    vlog(`${label} API Response Body:`, data);
+    return data;
 }
 
 async function fetchDefaultAddress(clientKey) {
     try {
-        const data = await jeeblyGet('get_address', clientKey);
+        const data = await jeeblyGet('get_address', clientKey, 'Default Address');
         if (data?.success === 'true' && Array.isArray(data.address)) {
-            return data.address.find((a) => a.default_address === '1') || null;
+            const defaultAddr = data.address.find((a) => a.default_address === '1');
+            if (defaultAddr) {
+                vlog('Default address found:', defaultAddr);
+                return defaultAddr;
+            }
+            console.error('No default address found in the response.');
         }
     } catch (error) {
         console.error('get_address failed:', error.message);
@@ -234,7 +309,7 @@ async function fetchDefaultAddress(clientKey) {
 
 async function fetchConfigureData(clientKey) {
     try {
-        const data = await jeeblyGet('get_configuration', clientKey);
+        const data = await jeeblyGet('get_configuration', clientKey, 'Configuration');
         // Old code used `if (data.success)`, which is also true for the string 'false'
         if (data?.success === 'true' || data?.success === true) return data;
     } catch (error) {
