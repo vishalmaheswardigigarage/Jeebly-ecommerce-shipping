@@ -112,6 +112,7 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
     } catch (error) {
         console.error('Error processing webhook:', error);
+        return res.status(200).json({ success: false, message: 'Error handled' });
 
     }
 });
@@ -133,6 +134,13 @@ app.post('/api/webhooks/ordercreate', async (req, res) => {
 
 
 async function processWebhookData(payload, extractedShopId, session,shippingTitle) {
+
+     // NEW: orders without a shipping address (POS / digital) cannot be shipped
+     if (!payload?.shipping_address) {
+        console.log(`Skipping order ${payload?.id}: no shipping address`);
+        return;
+    }
+
     console.log("Processing webhook data:", JSON.stringify(payload, null, 2));
 
 
