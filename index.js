@@ -143,7 +143,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     ]);
 
     if (!defaultAddress) {
-        console.error("No default address found. Shipment creation aborted.");
+        console.log("No default address found. Shipment creation aborted.");
         return;
     }
 
