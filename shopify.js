@@ -49,7 +49,9 @@ const shopify = shopifyApp({
   webhooks: {
     path: "/api/webhooks",
   },
-  
+  future: {
+    expiringOfflineAccessTokens: true,
+  },
   sessionStorage: new MongoDBSessionStorage(MONGO_URI, DB_NAME)
 //  sessionStorage: new MemorySessionStorage() //this isthe last memory storage
 });
