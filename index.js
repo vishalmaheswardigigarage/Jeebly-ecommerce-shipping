@@ -137,11 +137,11 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
 
      // NEW: orders without a shipping address (POS / digital) cannot be shipped
      if (!payload?.shipping_address) {
-        console.log(`Skipping order ${payload?.id}: no shipping address`);
+        // console.log(`Skipping order ${payload?.id}: no shipping address`);
         return;
     }
 
-    console.log("Processing webhook data:", JSON.stringify(payload, null, 2));
+    // console.log("Processing webhook data:", JSON.stringify(payload, null, 2));
 
 
     //   // Fetch the default address and configure dat.
@@ -151,7 +151,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     ]);
 
     if (!defaultAddress) {
-        console.log("No default address found. Shipment creation aborted.");
+        // console.log("No default address found. Shipment creation aborted.");
         return;
     }
 
@@ -204,26 +204,26 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
     const country = payload?.shipping_address.country;
     const Ship_type = shippingTitle;
 
-    console.log("Extracted Data for Shipment:", {
-        description,
-        weight,
-        codAmountToUse,
-        pieces,
-        dropoffName,
-        dropoffPhone,
-        selectedArea,
-        selectedCity,
-        paymentType,
-        pickupDate,
-        defaultAddress,
-        orderNumber,
-        getConfigure,
-        clientKey,
-        timeZone,
-        OrderId,
-        Ship_type,
-        country
-    });
+    // console.log("Extracted Data for Shipment:", {
+    //     description,
+    //     weight,
+    //     codAmountToUse,
+    //     pieces,
+    //     dropoffName,
+    //     dropoffPhone,
+    //     selectedArea,
+    //     selectedCity,
+    //     paymentType,
+    //     pickupDate,
+    //     defaultAddress,
+    //     orderNumber,
+    //     getConfigure,
+    //     clientKey,
+    //     timeZone,
+    //     OrderId,
+    //     Ship_type,
+    //     country
+    // });
 
     // Call the createShipment function with the extracted data
     await createShipment({
@@ -279,7 +279,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
 
         if (lastTime && now - lastTime < oneMinute) {
             const waitTime = oneMinute - (now - lastTime);
-            console.log(`Order ${orderNumber} was processed recently. Waiting ${waitTime / 1000}s...`);
+            // console.log(`Order ${orderNumber} was processed recently. Waiting ${waitTime / 1000}s...`);
             await delay(waitTime);
         }
 
@@ -322,7 +322,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
             destination_address_country : country
         });
 
-        console.log("Creating shipment with the following payload:");
+        // console.log("Creating shipment with the following payload:");
 
         try {
             const response = await fetch(url, {
@@ -331,13 +331,13 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
                 body: body
             });
 
-            console.log(`Shipment API Response Status: ${response.status}`);
+            // console.log(`Shipment API Response Status: ${response.status}`);
 
             const responseBody = await response.json();
-            console.log("Shipment API Response Body:", responseBody);
+            // console.log("Shipment API Response Body:", responseBody);
 
             if (response.ok) {
-                console.log("Shipment created successfully:", responseBody);
+                // console.log("Shipment created successfully:", responseBody);
                 // === Extract tracking / AWB number ===
                 const trackingNumber = responseBody["AWB No"];
 
@@ -346,10 +346,10 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
                     return;
                 }
 
-                console.log("Calling Shopify tracking update with:", {
-                    orderId: OrderId,
-                    trackingNumber
-                });
+                // console.log("Calling Shopify tracking update with:", {
+                //     orderId: OrderId,
+                //     trackingNumber
+                // });
 
 
                 // === Call backend tracking update ===
@@ -358,7 +358,7 @@ async function processWebhookData(payload, extractedShopId, session,shippingTitl
 
                 const result = await updateOrderTracking(session, OrderId, trackingNumber);
 
-                console.log("Tracking update result:", result);
+                // console.log("Tracking update result:", result);
                 // updateTrackingDirect(OrderId, trackingNumber); // Removed redundant call
             }
 
@@ -385,26 +385,26 @@ async function fetchDefaultAddress(extractedShopId) {
 
     const url = `https://myjeebly.jeebly.com/app/get_address?client_key=${clientKey}`;
 
-    console.log("Fetching default address from:", url);
+    // console.log("Fetching default address from:", url);
 
     try {
         const response = await fetch(url, { method: "GET" });
-        console.log(`Default Address API Response Status: ${response.status}`);
+        // console.log(`Default Address API Response Status: ${response.status}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Default Address API Response Body:", data);
+        // console.log("Default Address API Response Body:", data);
 
         if (data && data.success === "true" && Array.isArray(data.address)) {
             const defaultAddr = data.address.find(addr => addr.default_address === "1");
             if (defaultAddr) {
-                console.log("Default address found:", defaultAddr);
+                // console.log("Default address found:", defaultAddr);
                 return defaultAddr;
             } else {
-                console.error("No default address found in the response.");
+                // console.error("No default address found in the response.");
                 return null;
             }
         }
@@ -421,24 +421,24 @@ async function fetchConfigureData(extractedShopId) {
     const clientKey = extractedShopId;
     const url = `https://myjeebly.jeebly.com/app/get_configuration?client_key=${clientKey}`;
 
-    console.log("Fetching configuration data from:", url);
+    // console.log("Fetching configuration data from:", url);
 
     try {
         const response = await fetch(url, { method: "GET" });
-        console.log(`Configuration API Response Status: ${response.status}`);
+        // console.log(`Configuration API Response Status: ${response.status}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log("Configuration API Response Body:", data);
+        // console.log("Configuration API Response Body:", data);
 
         if (data && data.success) {
             return data; // Return configuration data if successf
         }
     } catch (error) {
-        console.error("Error fetching configuration data:", error);
+        // console.error("Error fetching configuration data:", error);
     }
     return null; // Return null if no configuration data is found or if an error occurs
 }
@@ -484,7 +484,7 @@ app.get("/api/shop/all", async (_req, res) => {
             session: res.locals.shopify.session,
         });
         shopId = shopData.data[0].id
-        console.log("endpoint of shop data", shopData)
+        // console.log("endpoint of shop data", shopData)
         // res.status(200).json({ success: true, data:shopData});
         res.status(200).json({ success: true, data: shopData });
 
@@ -607,7 +607,7 @@ app.get("/api/orders/all", async (_req, res) => {
 
         // Send the filtered orders as the response
         res.status(200).json({ success: true, data: filteredOrders });
-        console.log("Filtered order data retrieved successfully");
+        // console.log("Filtered order data retrieved successfully");
     } catch (error) {
         console.error('Error fetching orders:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
@@ -722,5 +722,5 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    // console.log(`Server is running on port ${PORT}`);
 });

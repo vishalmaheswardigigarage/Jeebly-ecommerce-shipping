@@ -71,7 +71,7 @@ async function createWebhook(shop, accessToken) {
       },
       type: shopify.Clients.Rest.DataType.JSON,
     });
-    console.log('Webhook created:', response.body);
+    // console.log('Webhook created:', response.body);
   } catch (error) {
     console.error('Failed to create webhook:', error);
   }
